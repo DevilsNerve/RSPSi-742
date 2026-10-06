@@ -51,6 +51,8 @@ public class LauncherWindow extends Application {
 		controller = new LauncherController();
 		loader.setController(controller);
 		Parent content = loader.load();
+		((javafx.scene.control.Button) loader.getNamespace().get("worldWorkspaceButton"))
+			.setOnAction(event -> com.rspsi.world.WorldEditor.open());
 		Scene scene = new Scene(content);
 
 		scene.setFill(Color.TRANSPARENT);
@@ -66,6 +68,8 @@ public class LauncherWindow extends Application {
 		primaryStage.centerOnScreen();
 		
 		Settings.loadSettings();
+		new File(PLUGINS_PATH + "active").mkdirs();
+		new File(PLUGINS_PATH + "inactive").mkdirs();
 		
 		String cacheLoc = Settings.getSetting("cacheLocation", Config.cacheLocation.get());
 	
@@ -178,7 +182,7 @@ public class LauncherWindow extends Application {
 		controller.getDisabledPlugins().getItems().addAll(getPlugins("inactive"));
 	}
 	
-	private static final String PLUGINS_PATH = "plugins" + File.separator;
+	private static final String PLUGINS_PATH = System.getProperty("rspsi.plugins", "plugins") + File.separator;
 	
 	private static List<String> getPlugins(String folderName){
 		List<String> list = Lists.newArrayList();

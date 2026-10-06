@@ -3,8 +3,6 @@
 bin/
 build/
 out/
-/gradlew.bat
-/gradlew
 
 .settings/
 
@@ -14,3 +12,6 @@ out/
 
 hs_err_*
 /Editor/plugins/
+
+__pycache__/
+*.pyc

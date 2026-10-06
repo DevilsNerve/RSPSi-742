@@ -5,4 +5,4 @@ include ':Editor'
 include ':Plugins'
 include ':RS-Cache-Library'
 include 'Plugins:Plugin742'
-
+include ':WorldEditor'

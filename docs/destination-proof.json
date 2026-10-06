@@ -1,0 +1,92 @@
+{
+  "destinations": [
+    {
+      "base": "xyren-world",
+      "changed_regions": [
+        48830,
+        48831,
+        49086,
+        49087
+      ],
+      "export_bytes": 8016225,
+      "export_sha256": "612f7247058191e80bbf46d843b752290970810a8e78e24b0af0ec068e721306",
+      "reader_inputs_sha256": "5dedca71872c8bd24dcdaa8b32ceafa756eca50c26f716ca34389e8c664e579f",
+      "source": "xyren-world"
+    },
+    {
+      "base": "reference",
+      "changed_regions": [
+        48830,
+        48831,
+        49086,
+        49087
+      ],
+      "export_bytes": 6844672,
+      "export_sha256": "4e65116fec62db30bdf02a92fa18e3a2da7a621b559fe21916ce458545110969",
+      "reader_inputs_sha256": "5dedca71872c8bd24dcdaa8b32ceafa756eca50c26f716ca34389e8c664e579f",
+      "source": "reference"
+    },
+    {
+      "base": "native-741fb765c5c867a29ea4",
+      "changed_regions": [
+        48830,
+        48831,
+        49086,
+        49087
+      ],
+      "export_bytes": 8022874,
+      "export_sha256": "a5f3dd843e2d258a2ca364a781a96529917fc3b33493c670e75a76f165324e63",
+      "reader_inputs_sha256": "5dedca71872c8bd24dcdaa8b32ceafa756eca50c26f716ca34389e8c664e579f",
+      "source": "near-reality"
+    }
+  ],
+  "original_sources_unchanged": true,
+  "temporary_workspace_removed": true,
+  "transfers": [
+    {
+      "destination": "xyren-world",
+      "object_id": 114,
+      "source": "reference"
+    },
+    {
+      "destination": "xyren-world",
+      "object_id": 202,
+      "source": "near-reality"
+    },
+    {
+      "destination": "xyren-world",
+      "object_id": 202,
+      "source": "xyren-world"
+    },
+    {
+      "destination": "reference",
+      "object_id": 114,
+      "source": "reference"
+    },
+    {
+      "destination": "reference",
+      "object_id": 202,
+      "source": "near-reality"
+    },
+    {
+      "destination": "reference",
+      "object_id": 202,
+      "source": "xyren-world"
+    },
+    {
+      "destination": "near-reality",
+      "object_id": 114,
+      "source": "reference"
+    },
+    {
+      "destination": "near-reality",
+      "object_id": 202,
+      "source": "near-reality"
+    },
+    {
+      "destination": "near-reality",
+      "object_id": 202,
+      "source": "xyren-world"
+    }
+  ]
+}

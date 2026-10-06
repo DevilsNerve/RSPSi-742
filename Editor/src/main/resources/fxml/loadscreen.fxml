@@ -137,6 +137,7 @@
                <children>
                   <HBox alignment="CENTER_RIGHT" spacing="10.0" style="-fx-background-color: #4a4a4a;">
                      <children>
+                        <Button fx:id="worldWorkspaceButton" mnemonicParsing="false" text="Xyren / Emps / Near Reality" />
                         <Button fx:id="launchButton" mnemonicParsing="false" prefWidth="80.0" text="Launch" />
                         <Button fx:id="cancelButton" mnemonicParsing="false" prefWidth="80.0" text="Cancel" />
                      </children>

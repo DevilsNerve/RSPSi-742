@@ -1,0 +1,20 @@
+apply plugin: 'application'
+application { mainClass = 'com.rspsi.world.WorldEditor'; applicationName = 'xyren-map-editor' }
+distributions {
+    main {
+        contents {
+            from(rootProject.file('LICENSE'))
+            from(rootProject.file('tools')) { into 'tools'; exclude '__pycache__', 'test_*' }
+            from(rootProject.file('docs')) { into 'docs' }
+        }
+    }
+}
+tasks.register('bridgeTest', Exec) {
+    workingDir rootProject.projectDir
+    commandLine 'python3', '-m', 'unittest', 'discover', '-s', 'tools', '-p', 'test_*.py'
+}
+tasks.named('check') { dependsOn 'bridgeTest' }
+tasks.withType(Test).configureEach {
+    systemProperty 'xyren.ui.test', System.getProperty('xyren.ui.test', 'false')
+    systemProperty 'xyren.editor.home', rootProject.projectDir.absolutePath
+}

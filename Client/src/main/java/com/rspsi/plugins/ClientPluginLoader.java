@@ -29,9 +29,10 @@ public class ClientPluginLoader {
 	
 	
 	public static void loadPlugins() {
-		File pluginPath = new File("plugins" + File.separator + "active");
-		log.info("Plugin folder contains {} files.", pluginPath.listFiles().length);
+		File pluginPath = new File(System.getProperty("rspsi.plugins", "plugins"), "active");
 		File[] plugins = pluginPath.listFiles((File dir, String name) -> name.endsWith(".jar"));
+		if (plugins == null) plugins = new File[0];
+		log.info("Plugin folder contains {} files.", plugins.length);
 		
 		List<URL> urls = Lists.newArrayList();
 		

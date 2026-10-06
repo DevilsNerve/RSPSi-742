@@ -1,4 +1,48 @@
 # RSPSi-742
+
+This fork includes a **Xyren / Emps World / Near Reality map workspace**.
+Open two maps, drag an area, copy its terrain and/or objects, and paste it into
+a destination project. Source object IDs stay tied to their source cache;
+export brings the required models, floors, textures and animations with them.
+
+The workspace supports all four planes, selections across map squares,
+rotation/reflection, height matching, terrain editing, object placement,
+undo/redo, automatic project saving, portable project files and validated
+Xyren cache exports. Its viewport is a 2D terrain and object-footprint view.
+The original experimental 742 3D editor remains a separate launcher option.
+
+Use **Java 17 or 21**. On the Xyren tools host:
+
+```sh
+./gradlew :WorldEditor:run
+```
+
+For a desktop package:
+
+```sh
+./gradlew :WorldEditor:installDist :WorldEditor:distZip
+```
+
+Run `WorldEditor/build/install/xyren-map-editor/bin/xyren-map-editor`
+(`xyren-map-editor.bat` on Windows). The desktop connects to the maintained
+Xyren map tools locally or over SSH. See [setup and editing instructions](docs/xyren-workspace.md)
+for cache inputs, Windows connections and the export format.
+
+Verification:
+
+```sh
+./gradlew :WorldEditor:check
+python3 tools/check_maps.py --output docs/map-round-trip-proof.json
+python3 tools/check_destinations.py --output docs/destination-proof.json
+xvfb-run -a ./gradlew -Dxyren.ui.test=true :WorldEditor:test
+```
+
+These checks use private temporary projects and the actual Xyren map/model/
+collision readers. They do not publish a live world. The retained receipts
+record the tested source identities and decoder inputs.
+
+## Original 742 editor
+
 ![Custom Lletya made with RSPSi-742](https://i.imgur.com/vHNucy9.jpeg)
 ###### Custom Lletya made with RSPSi-742
 ____________________________________________________________________
@@ -29,7 +73,7 @@ Converted `Plugin667` in `\plugins\` to `Plugin742` by extending and/or modifyin
 All other plugin files remain the same as they were in the 667 build.
 
 # Compatibility
-- Use Oracle JDK / JRE 8.
+- Use Java 17 or 21; Gradle supplies the JavaFX libraries.
 - This has only been tested using the below resources. Results with other caches may vary.
 
 # Disclaimers
@@ -51,10 +95,7 @@ All other plugin files remain the same as they were in the 667 build.
 # Resources
 - [742 Cache](https://archive.openrs2.org/caches/runescape/544/disk.zip)
 - [742 XTEAs](https://archive.openrs2.org/caches/runescape/544/keys.json)
-- JDK: https://www.oracle.com/java/technologies/javase/javase8-archive-downloads.html
-- JRE: https://www.java.com/en/download/manual.jsp  
-
-This project uses JavaFX components, which are only available from the above linked JDK / JRE.
+- JavaFX dependencies are declared in `Client/build.gradle`.
 
 # Credits
 - [The original RSPSi](https://github.com/RSPSi/RSPSi) - Creating the editor.
@@ -62,4 +103,3 @@ This project uses JavaFX components, which are only available from the above lin
 - [LostCityRS/RS742](https://github.com/LostCityRS/RS742) - Amazing deobfuscated 742 client used for reference to make this work.
 
 A massive thank-you to all the talented developers who put their time and effort into these projects which let me get this done. It could never have been done without their hard work.
-

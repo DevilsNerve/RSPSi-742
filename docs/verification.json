@@ -1,0 +1,37 @@
+{
+  "all_nine_transfers": "destination-proof.json",
+  "desktop_screenshot": "desktop-round-trip.png",
+  "java_suites": [
+    {
+      "cases": [
+        "commandKeepsPathsAndArgumentsLiteral",
+        "rejectsAnEmptyCommand",
+        "narrowToolbarsReserveSpaceForEveryWrappedRow",
+        "picksWorldCoordinatesWithNorthAtTheTopAtEveryZoom",
+        "rotatedFurnitureKeepsItsWholeFootprint"
+      ],
+      "name": "com.rspsi.world.MapCanvasTest",
+      "tests": 5
+    },
+    {
+      "cases": [
+        "selectsCopiesPastesUndoesSavesAndImportsThroughTheDesktop"
+      ],
+      "name": "com.rspsi.world.WorldEditorUiTest",
+      "tests": 1
+    },
+    {
+      "cases": [
+        "modernJavaLaunchesTheExistingEditorAndOffersTheWorldWorkspace"
+      ],
+      "name": "com.rspsi.DesktopLauncherTest",
+      "tests": 1
+    }
+  ],
+  "java_tests": 7,
+  "live_publication": false,
+  "platform": "Linux Xvfb",
+  "python_codec_tests": 14,
+  "real_sources": "map-round-trip-proof.json",
+  "windows_physical_tested": false
+}

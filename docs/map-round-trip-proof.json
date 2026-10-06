@@ -1,0 +1,44 @@
+{
+  "checks": [
+    "Three real source namespaces, four planes, cross-square paste and reflected geometry",
+    "Undo and redo restore the complete three-source project",
+    "Save, import and reopen preserve tiles and source object identities",
+    "Actual Xyren definitions, geometry, materials, maps and server collision reader accept the compiled export",
+    "Downloaded ZIP matches its size, checksum, all changed assets and collision coverage",
+    "Every consumed source archive stayed unchanged"
+  ],
+  "export": {
+    "bytes": 8012727,
+    "changed_regions": [
+      48830,
+      48831,
+      49086,
+      49087
+    ],
+    "collision_regions": [
+      48830,
+      48831,
+      49086,
+      49087
+    ],
+    "files": 39,
+    "included_files": 70,
+    "reader_inputs_sha256": "5dedca71872c8bd24dcdaa8b32ceafa756eca50c26f716ca34389e8c664e579f",
+    "sha256": "d8de390ad5de71e4a1dfd70aec86e01db1f7d468b6ca7a6dd5a2df4dcf286f91"
+  },
+  "sources": {
+    "near-reality": {
+      "identity": "de107b9f3f898be4fff85e49af9cd0d153ef6792086bc33e07c4c038eaeb4554",
+      "regions": 3051
+    },
+    "reference": {
+      "identity": "164144772a4c39f7de393e2d23c44a5356ce9a57197f921e59ad4371756af925",
+      "regions": 2232
+    },
+    "xyren-world": {
+      "identity": "1af9ccf7a5e54ea957b2797a3b8a0c6fda69551781448b597a87d5d3688c9b44",
+      "regions": 4061
+    }
+  },
+  "temporary_workspace_removed": true
+}
