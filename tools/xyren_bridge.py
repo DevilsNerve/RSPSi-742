@@ -144,7 +144,134 @@ class Workspace:
         return {'sources': self.source_list(), 'base': self.base,
                 'projects': self.projects.list()['projects'], 'project': self.project,
                 'workspace': str(self.directory), 'format': 'Xyren native',
-                'tools_revision': self.tools_revision()}
+                'tools_revision': self.tools_revision(), 'capabilities': {'preview_3d': 1}}
+
+    def preview_3d(self, body):
+        """Bake visible scenery with the maintained native client, in a private scene.
+
+        This is a rendering transport only. Authoring, namespaces, model conversion
+        and collision continue to belong to the existing maintained map tools.
+        """
+        import subprocess
+        from scripts.xyren_maps.editor_scene import Scenes
+        from scripts.xyren_maps.editor_publication import reader_classes
+        from scripts.xyren_maps.converter_runtime import reader_resources, build
+        require(self.project is not None, 'Create or open a destination project first')
+        regions = body.get('regions')
+        require(isinstance(regions, list) and 0 < len(regions) <= 9
+                and all(type(r) is int and 0 <= r <= 65535 for r in regions), 'View one to nine regions')
+        source_key = body['source']
+        viewed = self.view(source_key, regions)
+        revision = self.summary()['revision']
+        require(revision == body.get('revision'), 'Project changed; refresh the 3D view')
+        x, y, plane = body.get('x'), body.get('y'), body.get('plane')
+        require(type(x) is int and type(y) is int and 0 <= x <= 16383 and 0 <= y <= 16383
+                and type(plane) is int and 0 <= plane < 4, 'Invalid 3D camera position')
+        require((x >> 6 << 8 | y >> 6) in regions, 'Camera must be inside the visible regions')
+        previous_runtime = os.environ.get('XYREN_MAP_CONVERTER_RUNTIME')
+        scratch = self.directory/'preview-runtime'/uuid.uuid4().hex
+        scene = None
+        try:
+            try:
+                reader_resources(self.tools/'XyrenClient2')
+            except ValueError as error:
+                if not str(error).startswith('client resource changed; rebuild the converter runtime:'):
+                    raise
+                self.progress('Refreshing the private 3D codec runtime')
+                scratch.parent.mkdir(exist_ok=True, mode=0o700)
+                build(scratch)
+                os.environ['XYREN_MAP_CONVERTER_RUNTIME'] = str(scratch)
+            compiler = Scenes(self.projects, progress=self.progress)
+            request = {'source': source_key, 'revision': revision, 'x': x, 'y': y, 'plane': plane}
+            if source_key != 'draft': request['identity'] = self.sources.get(source_key).identity
+            info = compiler.create(self.project, request)
+            scene = compiler.path(info['id'])
+            manifest = compiler.manifest(info['id'])
+            source = self.sources.get(manifest['source'])
+            # Foreign/draft rows bind to freshly allocated compiled native IDs.
+            bindings = {row[6]: row for row in manifest.get('bindings', [])}
+            rows = []
+            for region in viewed['regions'].values():
+                for obj in region['objects']:
+                    if obj['plane'] != plane: continue
+                    binding = bindings.get(obj['key'])
+                    require(binding is not None or obj['source'] in ('xyren', source.key),
+                            'Visible foreign object has no compiled native binding')
+                    rows.append({**obj, 'native_id': binding[0] if binding else obj['id']})
+            window = {rx << 8 | ry
+                      for rx in range(max(0, (x >> 6)-1), min(255, (x >> 6)+1)+1)
+                      for ry in range(max(0, (y >> 6)-1), min(255, (y >> 6)+1)+1)}
+            require(set(regions) <= window, 'The 3D view must fit inside the camera region and its neighbors')
+            original = self.sources.get('xyren' if source_key == 'draft' else source_key)
+            height_ids = sorted((window & set(original.regions) - set(original.exclusions)) | set(regions))
+            if source_key == 'draft':
+                height_regions = self.projects.view(self.project, height_ids)['regions']
+            else:
+                height_regions = {str(r): original.region(r) for r in height_ids}
+            job = {'cache': str(source.path), 'overlay': str(scene/'payload'), 'objects': rows,
+                   'heights': {r: [cell[7] for cell in region['tiles']] for r, region in height_regions.items()},
+                   'surfaces': self.preview_surfaces(scene, source, regions, plane), 'plane': plane}
+            helper = Path(__file__).with_name('RSPSiPreview.java')
+            require(helper.is_file(), 'Install RSPSiPreview.java beside the map bridge')
+            self.progress('Building the matching client mesh reader')
+            cp, pins = reader_classes(scene/'rspsi-reader', self.tools/'XyrenClient2')
+            classes = scene/'rspsi-preview-classes'; classes.mkdir(mode=0o700)
+            subprocess.run(['javac', '-cp', cp, '-d', str(classes), str(helper)], check=True,
+                           stdout=sys.stderr, stderr=sys.stderr)
+            (scene/'preview-job.json').write_bytes(json_bytes(job))
+            self.progress('Decoding visible models and texture pixels')
+            subprocess.run(['java', '-Xmx2g', '-cp', str(classes)+os.pathsep+cp,
+                            'RSPSiPreview', str(scene/'preview-job.json'), str(scene/'preview.json')], check=True,
+                           stdout=sys.stderr, stderr=sys.stderr)
+            require(self.summary()['revision'] == revision, 'Project changed while building the 3D view')
+            compiler.manifest(info['id'], check_generation=True)
+            self.sources.assert_current()
+            require(all(Path(p).is_file() and hashlib.sha256(Path(p).read_bytes()).hexdigest() == pin
+                        for p, pin in pins.items()), 'Client reader changed during preview')
+            preview = scene/'preview.json'
+            require(preview.stat().st_size <= 256*1024*1024, 'Visible 3D geometry exceeds capacity')
+            archive = scene/'rspsi-preview.zip'
+            with zipfile.ZipFile(archive, 'x', compression=zipfile.ZIP_DEFLATED) as z:
+                z.write(preview, 'preview.json')
+            digest = hashlib.sha256()
+            with archive.open('rb') as f:
+                for block in iter(lambda: f.read(1024*1024), b''): digest.update(block)
+            self.exports[info['id']] = archive
+            return {'token': info['id'], 'bytes': archive.stat().st_size,
+                    'sha256': digest.hexdigest(), 'revision': revision, 'source': source_key}
+        except Exception:
+            if scene is not None and scene.is_dir(): shutil.rmtree(scene)
+            raise
+        finally:
+            if previous_runtime is None: os.environ.pop('XYREN_MAP_CONVERTER_RUNTIME', None)
+            else: os.environ['XYREN_MAP_CONVERTER_RUNTIME'] = previous_runtime
+            if scratch.is_dir(): shutil.rmtree(scratch)
+
+    def preview_surfaces(self, scene, source, regions, plane):
+        """Use compiled floor IDs, including allocated foreign materials."""
+        from scripts.xyren_maps.cache import read_named, named_get
+        from scripts.xyren_maps.formats import read_floor_records, read_terrain
+        from scripts.xyren_map_underlay import inflate
+        def asset(relative):
+            path = scene/'payload'/relative
+            return path if path.is_file() else source.path/relative
+        floors = read_floor_records(named_get(read_named(asset('0/2').read_bytes()), 'flo2.dat'), True)[0]
+        index = self._index(asset('0/5'))
+        result = {}
+        for region in regions:
+            require(region in index, 'Compiled preview region is unavailable')
+            tiles = read_terrain(inflate(asset('4/'+str(index[region][0]+1)).read_bytes()), revision=235)
+            materials = []
+            for tile in tiles[plane*4096:(plane+1)*4096]:
+                if not tile.overlay:
+                    materials.append(-1)
+                else:
+                    require(tile.overlay <= len(floors), 'Compiled preview overlay is unavailable')
+                    definition = floors[tile.overlay-1]
+                    texture = definition.get(3, definition.get(2, -1))
+                    materials.append(-1 if texture == 65535 else texture)
+            result[str(region)] = materials
+        return result
 
     def tools_revision(self):
         import subprocess
@@ -468,6 +595,7 @@ class Workspace:
             return self.summary()
         if action == 'projects': return self.projects.list()
         if action == 'view': return self.view(body['source'], body['regions'])
+        if action == 'preview_3d': return self.preview_3d(body)
         if action == 'summary': return self.summary()
         if action == 'palette': return self.sources.get(body['source']).palette()
         if action == 'catalog': return self.sources.get(body['source']).catalog(body.get('query', ''), body.get('page', 1), 100)

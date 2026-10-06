@@ -25,4 +25,7 @@ tasks.matching { it.name in ['installDist', 'distZip', 'distTar'] }.configureEac
 tasks.withType(Test).configureEach {
     systemProperty 'xyren.ui.test', System.getProperty('xyren.ui.test', 'false')
     systemProperty 'xyren.editor.home', rootProject.projectDir.absolutePath
+    // Native DLLs stay loaded for the worker lifetime on Windows. Keep them
+    // outside each test's temporary user.home so its files can be cleaned up.
+    systemProperty 'javafx.cachedir', layout.buildDirectory.dir('javafx-native-cache').get().asFile.absolutePath
 }

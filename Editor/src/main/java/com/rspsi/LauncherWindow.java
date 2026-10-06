@@ -47,12 +47,16 @@ public class LauncherWindow extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		singleton = this;
 		this.primaryStage = primaryStage;
+		if (getParameters() != null && getParameters().getRaw().contains("--xyren3d")) {
+			new com.rspsi.source.SourceEditor(primaryStage).show();
+			return;
+		}
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/loadscreen.fxml"));
 		controller = new LauncherController();
 		loader.setController(controller);
 		Parent content = loader.load();
 		((javafx.scene.control.Button) loader.getNamespace().get("worldWorkspaceButton"))
-			.setOnAction(event -> com.rspsi.world.WorldEditor.open());
+			.setOnAction(event -> MainWindow.openSourceWorkspace());
 		Scene scene = new Scene(content);
 
 		scene.setFill(Color.TRANSPARENT);

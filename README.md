@@ -1,5 +1,25 @@
 # RSPSi-742
 
+## Integrated 3D source editor
+
+The JavaFX Editor now includes a Xyren destination view beside one donor view,
+with a source switcher for Emps World and Near Reality. Each view owns its
+3D camera, terrain geometry, model geometry and materials. Selections can span
+adjoining map squares; copy/paste and editing use the maintained source-aware
+map backend.
+
+Build `./gradlew :Editor:installDist`, then run
+`Editor/build/install/RSPSi/bin/RSPSi --xyren3d` (`RSPSi.bat` on Windows), or
+choose **Xyren / Emps / Near Reality** in the RSPSi launcher.
+
+Windows rendering tests and read-only Xyren/Emps terrain checks pass. Textured
+scenery requires the new `preview_3d` bridge action and the accompanying
+`tools/RSPSiPreview.java` reader. The real Linux decoder integration still
+needs verification before treating that preview as complete.
+See [3D setup, workflow and verification](docs/source-editor-3d.md).
+
+## Existing 2D workspace
+
 This fork includes a **Xyren / Emps World / Near Reality map workspace**.
 Open two maps, drag an area, copy its terrain and/or objects, and paste it into
 a destination project. Source object IDs stay tied to their source cache;

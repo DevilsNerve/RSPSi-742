@@ -109,6 +109,11 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 public class MainWindow extends Application {
 
+	/** Open the source-aware 3D mode within the native JavaFX editor. */
+	public static void openSourceWorkspace() {
+		new com.rspsi.source.SourceEditor(new Stage()).show();
+	}
+
 	private static MainWindow singleton;
 
 	static {
