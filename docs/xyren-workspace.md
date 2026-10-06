@@ -149,5 +149,12 @@ xvfb-run -a -s '-screen 0 1920x1080x24' ./gradlew -Dxyren.ui.test=true :WorldEdi
 ```
 
 The retained JSON receipts and desktop screenshot document the tested Linux
-workflow. Windows physical desktop interaction and legacy 742 visual fidelity
-are separate acceptance checks.
+workflow. `windows-launch-proof.json` records the exact distributed package
+launching on the paired Windows desktop with a checksum-verified, Authenticode-
+verified Temurin 21 runtime and connecting to the three real caches over SSH.
+The desktop helper rejected foreground capture/input with `FOCUS_LOST`, so
+Windows copy/paste, object edits, save/import and export remain untested there.
+That run is stopped, its task artifacts are removed, and the original launch
+approvals are restored. Local activation of the editor window is needed for
+the next Windows interaction check. Legacy 742 visual fidelity remains a
+separate acceptance check.

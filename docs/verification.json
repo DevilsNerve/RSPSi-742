@@ -33,5 +33,8 @@
   "platform": "Linux Xvfb",
   "python_codec_tests": 14,
   "real_sources": "map-round-trip-proof.json",
+  "windows_backend_connected": true,
+  "windows_launch_receipt": "windows-launch-proof.json",
+  "windows_launch_tested": true,
   "windows_physical_tested": false
 }

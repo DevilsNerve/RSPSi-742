@@ -1,0 +1,74 @@
+{
+  "source_commit": "e33301f8243e6fd9c85cc326fd59a506aae97256",
+  "tested_package": {
+    "sha256": "32ac5be6a875d159ee8d24e92d8b39c2a8882a1effd87fec3e98adcb0fecc53d",
+    "bytes": 3706763
+  },
+  "runtime": {
+    "package": "OpenJDK21U-jre_x64_windows_hotspot_21.0.12.1_1.zip",
+    "bytes": 48999141,
+    "sha256": "d35f31e712f0fcf6ac5a093edc90204fbff22f720ba3950bd09d331d5e621636",
+    "source": "https://github.com/adoptium/temurin21-binaries/releases/tag/jdk-21.0.12.1%2B1",
+    "executable_sha256": "0d0448174d811b743faed2c1600b6174f33e65506e196b177effe0cd7a04cdb2",
+    "authenticode": "Valid",
+    "signer": "Eclipse Foundation"
+  },
+  "transport": "paired, pinned SSH stdio, task-owned filesystem IPC",
+  "private_keys_transferred": false,
+  "helper_security_changes": false,
+  "package_inputs_verified": 341,
+  "desktop": {
+    "user": "xyren-test",
+    "session": 2,
+    "primary_resolution": [
+      1920,
+      1080
+    ],
+    "dpi": 96,
+    "ready": true,
+    "epoch": "aac7a6e1-0fcd-4412-a8e5-d58f754e5dec",
+    "editor_pid": 5672,
+    "window_title": "Xyren Map Editor \u2014 RSPSi"
+  },
+  "sources": [
+    {
+      "key": "reference",
+      "kind": "native",
+      "regions": 2232,
+      "identity": "164144772a4c39f7de393e2d23c44a5356ce9a57197f921e59ad4371756af925"
+    },
+    {
+      "key": "near-reality",
+      "kind": "js5",
+      "regions": 3051,
+      "identity": "de107b9f3f898be4fff85e49af9cd0d153ef6792086bc33e07c4c038eaeb4554"
+    },
+    {
+      "key": "xyren-world",
+      "kind": "native",
+      "regions": 4061,
+      "identity": "1af9ccf7a5e54ea957b2797a3b8a0c6fda69551781448b597a87d5d3688c9b44"
+    }
+  ],
+  "backend_connection_passed": true,
+  "desktop_interaction_passed": false,
+  "pending": "Local activation of the owned editor window is required. The run is stopped; relaunch for the next desktop check.",
+  "map_edits_performed": false,
+  "status": "launch_verified_interaction_blocked",
+  "blocker": "FOCUS_LOST: the desktop helper rejected foreground capture and could not focus the owned editor HWND.",
+  "cleanup": {
+    "all_owned_editor_processes_stopped": true,
+    "linux_backend_stopped": true,
+    "ssh_transport_stopped": true,
+    "input_released": true,
+    "remote_task_artifacts_removed": true,
+    "original_approval_bytes_restored": true,
+    "approval_sha256": "7e652801bd93351ef960c6fe4a4160f9757f51ae940ab3bd4722b4a4d088c4f7",
+    "retained_original_approval_entries": 2
+  },
+  "limitations": [
+    "No Windows map copy/paste, object CRUD, save/import, export or visible screenshot is claimed.",
+    "The test-only IPC reader expired while waiting for local activation. The paired SSH transport and backend were stopped.",
+    "This editor previews 2D terrain and object footprints; textured 3D meshes, NPC spawns and server scripts are outside this mode."
+  ]
+}
