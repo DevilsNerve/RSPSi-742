@@ -35,7 +35,7 @@ public final class SourceEditor implements AutoCloseable {
     private final TextField pasteX=new TextField("3222"),pasteY=new TextField("3222"),heightOffset=new TextField("0");
     private BridgeClient bridge;
     private JsonObject project;
-    private boolean assetsAvailable,closed,busy;
+    private boolean assetsAvailable,closed,busy,connecting;
     private View active=donor;
     public SourceEditor(Stage stage) {
         this.stage=stage;stage.setTitle("RSPSi — Xyren 3D Map Editor");
@@ -70,6 +70,7 @@ public final class SourceEditor implements AutoCloseable {
     }
     private JsonObject rpc(String action,JsonObject body) throws IOException {return bridge.call(action,body,message -> Platform.runLater(() -> status.setText(message)));}
     private void connect() {
+        connecting=true;
         String command=System.getProperty("xyren.backend.command",preferences.get("backend",BridgeClient.defaultCommand()));
         submit("Connecting to Xyren, Emps World and Near Reality",() -> {
             if(bridge!=null)bridge.close();bridge=new BridgeClient(BridgeClient.command(command));return rpc("hello",new JsonObject());
@@ -82,7 +83,7 @@ public final class SourceEditor implements AutoCloseable {
             if(destination.base==null)throw new IllegalStateException("The Xyren cache is unavailable");
             assetsAvailable=hello.has("capabilities")&&hello.getAsJsonObject("capabilities").has("preview_3d");
             donor.source.getSelectionModel().select(donor.source.getItems().stream().filter(s -> s.label.toLowerCase(Locale.ROOT).contains("emps")).findFirst().orElse(donor.source.getItems().get(0)));
-            status.setText(assetsAvailable?"Connected. Create or open your Xyren project.":"Connected. Terrain is ready; model and texture preview requires the prepared 3D bridge update.");
+            connecting=false;destination.load(true);
         });
     }
     private void connection() {
@@ -158,7 +159,7 @@ public final class SourceEditor implements AutoCloseable {
     private final class View {
         final boolean draft;final VBox panel=new VBox(6);final SourceViewport viewport=new SourceViewport();
         final ComboBox<Source> source=new ComboBox<>();final TextField x=new TextField("3222"),y=new TextField("3222");
-        final ComboBox<Integer> plane=new ComboBox<>();final Label info=new Label("Drag to select a section");Source base;
+        final ComboBox<Integer> plane=new ComboBox<>();final Label info=new Label("Drag to select a section");Source base;boolean sceneryLoaded;
         final CheckBox neighbors=new CheckBox("3×3 regions");
         View(boolean draft) {
             this.draft=draft;x.setPrefColumnCount(5);y.setPrefColumnCount(5);plane.getItems().addAll(0,1,2,3);plane.getSelectionModel().select(0);
@@ -168,12 +169,12 @@ public final class SourceEditor implements AutoCloseable {
             viewport.onActivate=() -> active=this;
             viewport.onTile=tile -> {if(draft){pasteX.setText(Integer.toString(tile.x()));pasteY.setText(Integer.toString(tile.y()));}};
             viewport.onSelection=s -> info.setText("Selected "+s.x0()+", "+s.y0()+" to "+s.x1()+", "+s.y1()+" ("+(s.x1()-s.x0()+1)+" × "+(s.y1()-s.y0()+1)+")");
-            source.setOnAction(e -> {if(!busy&&source.getValue()!=null&&project!=null)load(true);});
+            source.setOnAction(e -> {if(!busy&&!connecting&&source.getValue()!=null)load(true);});
             plane.setOnAction(e -> {if(!busy&&viewport.data()!=null)load(false);});
         }
-        String key() {return draft?"draft":Objects.requireNonNull(source.getValue(),"Choose a donor source").key;}
+        String key() {return draft?(project==null?base.key:"draft"):Objects.requireNonNull(source.getValue(),"Choose a donor source").key;}
         void load(boolean recenter) {
-            requireProject();int cx=number(x),cy=number(y),p=plane.getValue();if(cx<0||cy<0||cx>16383||cy>16383)throw new IllegalArgumentException("Map coordinates must be 0–16383");
+            int cx=number(x),cy=number(y),p=plane.getValue();if(cx<0||cy<0||cx>16383||cy>16383)throw new IllegalArgumentException("Map coordinates must be 0–16383");
             String key=key();Source selected=draft?base:source.getValue();int region=(cx>>6)<<8|(cy>>6);if(!draft&&!selected.regions.contains(region))throw new IllegalArgumentException("This source has no region at those coordinates.");
             JsonArray regions=new JsonArray();
             if(neighbors.isSelected())for(int rx=Math.max(0,(cx>>6)-1);rx<=Math.min(255,(cx>>6)+1);rx++)for(int ry=Math.max(0,(cy>>6)-1);ry<=Math.min(255,(cy>>6)+1);ry++) {
@@ -181,12 +182,20 @@ public final class SourceEditor implements AutoCloseable {
             }
             else regions.add(region);
             submit("Loading "+(draft?"Xyren draft":selected.label)+" terrain",() -> rpc("view",object("source",key,"regions",regions)),value -> {
-                viewport.show(value,p,cx,cy,recenter);info.setText("Region "+region+" · Plane "+p);
-                if(assetsAvailable)submit("Loading source models and textures",() -> preview(key,regions,cx,cy,p),packet -> {
-                    viewport.showScenery(packet);int failures=packet.has("failures")?packet.getAsJsonArray("failures").size():0;
+                viewport.show(value,p,cx,cy,recenter);sceneryLoaded=false;info.setText("Region "+region+" · Plane "+p);
+                if(assetsAvailable&&project!=null)submit("Loading source models and textures",() -> preview(key,regions,cx,cy,p),packet -> {
+                    viewport.showScenery(packet);sceneryLoaded=true;int failures=packet.has("failures")?packet.getAsJsonArray("failures").size():0;
+                    if(failures>0)info.setText("Region "+region+" · "+failures+" scenery failures");
                     status.setText(failures==0?"3D map loaded. Select an area to copy or edit.":"3D preview: "+failures+" scenery items could not be decoded; see backend diagnostics.");
-                });else status.setText("Terrain loaded in 3D. Model preview is waiting for the prepared bridge update.");
+                    finishLoad();
+                });else {
+                    status.setText(assetsAvailable?"Terrain loaded. Create or open a project to edit and load scenery.":"Terrain loaded in 3D. Model preview is waiting for the prepared bridge update.");
+                    finishLoad();
+                }
             });
+        }
+        private void finishLoad() {
+            if(draft&&donor.source.getValue()!=null&&(donor.viewport.data()==null||(assetsAvailable&&project!=null&&!donor.sceneryLoaded)))donor.load(donor.viewport.data()==null);
         }
     }
 }
